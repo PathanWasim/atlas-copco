@@ -1,0 +1,31 @@
+# GPU-Optimized Requirements for RTX 4050
+# Use this for CUDA-enabled training and inference
+
+# PyTorch with CUDA 12.1 support (for RTX 40 series)
+# Install separately with:
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Core dependencies
+ultralytics>=8.0.0
+opencv-python>=4.8.0
+mediapipe>=0.10.0
+numpy>=1.24.0
+pandas>=2.0.0
+tqdm
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Optional: GPU monitoring
+gpustat>=1.1.1
+
+# Optional: Jupyter notebook
+jupyter>=1.0.0
+ipykernel>=6.25.0
+matplotlib>=3.7.0
+
+# Note: Install PyTorch with CUDA first:
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# Then install this file:
+# pip install -r requirements-gpu.txt

@@ -1,0 +1,51 @@
+# YOLOv8 Dataset Configuration for Box-Opening Detection
+# This file defines the dataset structure and classes for training
+
+# Dataset paths (relative to this file or absolute)
+path: ./  # Root directory
+train: images/train  # Training images directory
+val: images/val      # Validation images directory
+test: images/test    # Test images directory (optional)
+
+# Number of classes
+nc: 2
+
+# Class names (must match annotation labels)
+names:
+  0: person
+  1: box
+
+# Dataset Information
+# - Annotate frames with bounding boxes for each class
+# - Use YOLO format: <class_id> <x_center> <y_center> <width> <height>
+# - All coordinates are normalized (0-1)
+# - Labels should be in corresponding labels/ directory
+
+# Example directory structure:
+# data/
+# ├── dataset.yaml (this file)
+# ├── images/
+# │   ├── train/
+# │   │   ├── frame_000001.jpg
+# │   │   ├── frame_000002.jpg
+# │   │   └── ...
+# │   ├── val/
+# │   │   ├── frame_001001.jpg
+# │   │   └── ...
+# │   └── test/
+# │       └── ...
+# └── labels/
+#     ├── train/
+#     │   ├── frame_000001.txt
+#     │   ├── frame_000002.txt
+#     │   └── ...
+#     ├── val/
+#     │   ├── frame_001001.txt
+#     │   └── ...
+#     └── test/
+#         └── ...
+
+# Annotation format example (frame_000001.txt):
+# 0 0.5 0.4 0.3 0.6    # person at center (0.5, 0.4) with size (0.3, 0.6)
+# 1 0.6 0.7 0.2 0.3    # box at (0.6, 0.7) with size (0.2, 0.3)
+# 2 0.6 0.65 0.2 0.1   # lid at (0.6, 0.65) with size (0.2, 0.1)

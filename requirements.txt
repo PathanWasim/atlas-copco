@@ -1,0 +1,9 @@
+python>=3.10
+ultralytics>=8.0.0
+opencv-python>=4.8.0
+mediapipe>=0.10.0
+numpy>=1.24.0
+pandas>=2.0.0
+tqdm
+pytest>=7.4.0
+pytest-cov>=4.1.0
