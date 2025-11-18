@@ -1,0 +1,175 @@
+# Box Detection System - Current Status & Issues
+
+## WHAT'S BEEN DONE
+
+### 1. System Setup (COMPLETE)
+- Installed PyTorch with CUDA 12.1 for RTX 4050 GPU
+- Installed YOLOv8 (ultralytics), OpenCV, Mediapipe, Pandas
+- GPU working: ~50 FPS inference speed (19ms per frame)
+- All dependencies installed and tested
+
+### 2. Core System Implementation (COMPLETE)
+- YOLOv8 detection module (src/detect_yolo.py)
+- Mediapipe pose estimation for hand tracking (src/hand_pose.py)
+- Box interaction logic (src/opening_logic.py)
+- Full pipeline orchestrator (src/pipeline.py)
+- CLI interface (main.py)
+- Training script (train_yolo.py)
+
+### 3. Data Preparation (COMPLETE)
+- Extracted 400 frames from 2 videos:
+  * data/frames/op-1/ - 200 frames from OP-1 video (Rushikesh)
+  * data/frames/op-2/ - 200 frames from OP-2 video (Shubham)
+- Auto-annotated 382 person detections using pretrained YOLOv8
+- Labels saved in YOLO format:
+  * data/labels/op-1/ - 200 label files
+  * data/labels/op-2/ - 200 label files
+
+### 4. Testing (COMPLETE)
+- Tested on OP-1 video (31,920 frames)
+- Processed in ~3 minutes with frame_skip=10
+- Person detection working (pretrained COCO model)
+- Results saved to output/op1_test/
+
+## CURRENT ISSUE
+
+### Problem: Inaccurate Box Detection
+Tried two approaches:
+1. ❌ Pretrained YOLO (COCO) - detects persons but not industrial boxes
+2. ❌ Contour detection (box_open_detector.py) - too noisy, detects everything as boxes
+
+### What User Needs
+Simple detection:
+1. Detect when a BOX is present in frame (industrial component boxes)
+2. Detect when PERSON's hands are near/touching the box
+3. Mark as "box interaction" event
+
+### Current Limitation
+- Pretrained COCO model doesn't have "box" class for industrial boxes
+- Contour detection gives too many false positives
+- Need to fine-tune model with actual box annotations
+
+### New Video Added
+User added "onedrive/box opening.mp4" - 22 second video showing actual box opening
+- 561 frames at 25 FPS
+- 4K resolution (3840x2160)
+- Perfect for testing and annotation
+
+## SOLUTION IN PROGRESS
+
+### Fine-Tuning Approach (NOT Custom Training)
+User specifically wants to FINE-TUNE the existing model, not train from scratch.
+
+### What's Ready:
+1. ✅ 400 frames extracted
+2. ✅ 382 person annotations auto-generated
+3. ✅ Training script configured for fine-tuning (freeze=10 layers)
+4. ✅ Dataset config: 2 classes (person, box)
+
+### What's Needed:
+1. ❌ Box annotations (user needs to add these manually)
+2. ❌ Data organized into train/val splits (80/20)
+3. ❌ Fine-tuning execution
+
+## TECHNICAL DETAILS
+
+### Hardware
+- GPU: NVIDIA RTX 4050 (6GB VRAM)
+- CPU: Intel i7 14th Gen HX
+- Performance: 150-200 FPS inference capability
+
+### Model Configuration
+- Base model: YOLOv8n (nano - fastest)
+- Classes: person (0), box (1)
+- Fine-tuning: Freeze first 10 layers
+- Expected training time: 30-45 minutes
+
+### Data Structure
+```
+data/
+├── frames/
+│   ├── op-1/          # 200 frames
+│   └── op-2/          # 200 frames
+├── labels/
+│   ├── op-1/          # 200 .txt files (person annotations)
+│   └── op-2/          # 200 .txt files (person annotations)
+└── dataset.yaml       # Training config (2 classes)
+```
+
+### Detection Logic
+Simple approach:
+- Detect person + box in same frame
+- Check if hands (wrist keypoints) are near box (30% margin)
+- If hands near box → interaction detected
+- Output: CSV with frame_id, box_opening, confidence
+
+## FILES STRUCTURE
+
+### Core Code
+- src/detect_yolo.py - YOLOv8 wrapper
+- src/hand_pose.py - Mediapipe pose estimation
+- src/opening_logic.py - Interaction detection logic
+- src/pipeline.py - Main processing pipeline
+- src/utils.py - Visualization helpers
+
+### Scripts
+- main.py - Run detection on videos
+- train_yolo.py - Fine-tune model
+- auto_annotate.py - Auto-annotate persons
+- prepare_training_data.py - Extract frames
+- test_gpu.py - Verify GPU setup
+
+### Data
+- data/frames/ - Extracted video frames
+- data/labels/ - YOLO format annotations
+- data/dataset.yaml - Training configuration
+
+### Output
+- output/op1_test/ - Test results from OP-1 video
+  * results.json - Full detection data
+  * results.csv - Summary (frame_id, box_opening, confidence)
+  * vis_frames/ - Annotated frames
+
+## NEXT STEPS
+
+### Immediate (User's Task):
+1. Upload data/frames/ + data/labels/ to Roboflow
+2. Add "box" class annotations (draw boxes around component boxes)
+3. Review/fix person annotations
+4. Export in YOLOv8 format
+5. Organize into train/val splits
+
+### After Annotation:
+1. Run: python train_yolo.py --data data/dataset.yaml --model n --epochs 50 --batch 32
+2. Wait 30-45 minutes for fine-tuning
+3. Test: python main.py --video video.mp4 --model runs/detect/box_finetune/weights/best.pt --visualize
+
+## ISSUES TO DISCUSS WITH CHATGPT
+
+1. Is fine-tuning the right approach vs full training?
+2. Should we use more classes (box_open, box_closed) or just "box"?
+3. How to improve hand-box interaction detection?
+4. Better logic for detecting opening/closing events?
+5. Should we use temporal information (tracking across frames)?
+6. How many annotated frames needed for good accuracy?
+7. Any better approach than Mediapipe for hand detection?
+
+## EXPECTED RESULTS
+
+After fine-tuning with 300+ annotated frames:
+- Person detection: 95%+ accuracy
+- Box detection: 85%+ accuracy
+- Hand-box interaction: 75%+ accuracy
+- Opening event detection: 70%+ accuracy
+
+## VIDEOS AVAILABLE
+
+1. OP-1: OneDrive_1_11-11-2025/Station-03 Videos/OP-1-MA-Rushikesh/IMG_1436.MOV
+   - Duration: 17.7 minutes (31,920 frames at 30fps)
+   - Size: 140MB
+
+2. OP-2: OneDrive_1_11-11-2025/Station-03 Videos/OP-2-MA-Shubham/VID20250801085523[1].mp4
+   - Duration: 16.5 minutes (29,747 frames at 30fps)
+   - Size: 350MB
+
+Both videos show Atlas Copco assembly station workers interacting with component boxes.
